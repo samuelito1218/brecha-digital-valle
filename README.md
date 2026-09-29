@@ -210,7 +210,7 @@ Ningún archivo de código tiene rutas absolutas: todas las rutas salen de `conf
 | Etapa | Entra | Qué se hace | Sale | Código |
 |---|---|---|---|---|
 | Bronze | API de datos.gov.co y archivos del DANE | Descarga sin modificar valores | 4 CSV + 2 XLSX en `data/bronze/` | `src/extract/extract_api.py` |
-| Silver | Archivos de Bronze | Limpieza, conversión de tipos y deduplicación; una función por fuente | 5 CSV en `data/silver/` | `src/transform/clean_*.py` |
+| Silver | Archivos de Bronze | Limpieza, conversión de tipos y de duplicación; una función por fuente | 5 CSV en `data/silver/` | `src/transform/clean_*.py` |
 | Gold | Archivos de Silver | Agregación a municipio-año, unión de fuentes, cálculo de indicadores e índice | 4 CSV en `data/gold/` | `src/transform/gold_data.py` |
 | Análisis | Archivos de Silver y Gold | Exploración de datos y gráficas por pregunta | Notebook y 21 PNG en `reports/figures/` | `notebooks/eda.ipynb` |
 
