@@ -1,0 +1,89 @@
+project:
+  name: brecha_digital_valle
+  version: 1.0
+  description: Pipeline ETL de conectividad y educación por municipio del Valle del Cauca
+  author: Samuel Arredondo, Cristian Andres M. Giraldo, Luis Carlos Lozano, Emmanuel Medina
+
+paths:
+  bronze_dir: data/bronze
+  silver_dir: data/silver
+  gold_dir: data/gold
+  logs_dir: logs
+  figures_dir: reports/figures
+  duckdb: data/gold/brecha_digital.duckdb
+
+api:
+  base_url: https://www.datos.gov.co/resource
+  limite_por_pagina: 50000
+  timeout: 120
+  reintentos: 3
+
+sources:
+  # Accesos de internet fijo por municipio, proveedor, segmento y tecnología (2017-2023).
+  # No trae población: la tasa por habitante se calcula con la población del DANE.
+  internet_fijo:
+    dataset_id: n48w-gutb
+    filtro: "cod_departamento = '76'"
+    columnas: ""
+    path: data/bronze/internet_fijo_raw.csv
+    silver: data/silver/internet_fijo.csv
+    file_type: api
+  # Baja a centro poblado y proveedor; indicadores S/N por tecnología (2015-2023).
+  cobertura_movil:
+    dataset_id: 9mey-c8s8
+    filtro: "cod_departamento = '76'"
+    columnas: ""
+    path: data/bronze/cobertura_movil_raw.csv
+    silver: data/silver/cobertura_movil.csv
+    file_type: api
+  men_educacion:
+    dataset_id: nudc-7mev
+    filtro: "c_digo_departamento = '76'"
+    columnas: ""
+    path: data/bronze/men_educacion_raw.csv
+    silver: data/silver/men_educacion.csv
+    file_type: api
+  saber11:
+    dataset_id: kgxf-xxbe
+    filtro: "cole_cod_depto_ubicacion = '76'"
+    columnas: "periodo,estu_consecutivo,cole_cod_mcpio_ubicacion,cole_mcpio_ubicacion,cole_area_ubicacion,cole_naturaleza,fami_estratovivienda,fami_tienecomputador,fami_tieneinternet,punt_global"
+    path: data/bronze/saber11_raw.csv
+    silver: data/silver/saber11.csv
+    file_type: api
+  # Proyecciones de población municipal por área (DANE, base Censo 2018).
+  # Se descargan dos archivos: retroproyección 2005-2017 y proyección 2018-2042.
+  poblacion_dane:
+    file_type: xlsx
+    silver: data/silver/poblacion.csv
+    archivos:
+      retroproyeccion:
+        url: https://www.dane.gov.co/files/censo2018/proyecciones-de-poblacion/Municipal/DCD-area-proypoblacion-Mun-2005-2017_VP.xlsx
+        path: data/bronze/poblacion_dane_2005_2017_raw.xlsx
+        hoja: NuevaMpal
+        fila_encabezado: 11
+      proyeccion:
+        url: https://www.dane.gov.co/files/censo2018/proyecciones-de-poblacion/Municipal/PPED-AreaMun-2018-2042_VP.xlsx
+        path: data/bronze/poblacion_dane_2018_2042_raw.xlsx
+        hoja: PobMunicipalxÁrea
+        fila_encabezado: 7
+
+gold:
+  dim_municipio: data/gold/dim_municipio.csv
+  brecha_urbano_rural: data/gold/brecha_urbano_rural.csv
+  municipio_anio: data/gold/municipio_anio.csv
+  ranking_priorizacion: data/gold/ranking_priorizacion.csv
+
+constant:
+  date_format: "%Y-%m-%d"
+  cod_departamento: "76"
+  total_municipios: 42
+  # Ventana común real: internet fijo empieza en 2017 y 2022 es el último año con T4 en todas las fuentes.
+  anio_inicio: 2017
+  anio_fin: 2022
+  # Saber 11: punt_global solo existe desde el periodo 20142.
+  periodo_minimo_saber11: 20142
+  # Índice de priorización: año del ranking y máximo % de nulos permitido por variable.
+  anio_ranking: 2022
+  max_pct_nulos_indice: 20
+  # Brecha por municipio: mínimo de estudiantes por zona para reportar un porcentaje.
+  min_estudiantes_zona: 30

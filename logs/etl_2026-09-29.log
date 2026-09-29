@@ -1,0 +1,16 @@
+2026-09-29 01:39:11 | internet_fijo | filas=256229 | dataset=n48w-gutb segundos=27.4
+2026-09-29 01:39:16 | cobertura_movil | filas=26822 | dataset=9mey-c8s8 segundos=4.4
+2026-09-29 01:39:20 | men_educacion | filas=588 | dataset=nudc-7mev segundos=4.2
+2026-09-29 01:41:37 | saber11 | filas=642592 | dataset=kgxf-xxbe segundos=137.1
+2026-09-29 01:41:43 | poblacion_dane_retroproyeccion | filas=43758 | url=https://www.dane.gov.co/files/censo2018/proyecciones-de-poblacion/Municipal/DCD-area-proypoblacion-Mun-2005-2017_VP.xlsx
+2026-09-29 01:41:55 | poblacion_dane_proyeccion | filas=84234 | url=https://www.dane.gov.co/files/censo2018/proyecciones-de-poblacion/Municipal/PPED-AreaMun-2018-2042_VP.xlsx
+2026-09-29 01:42:17 | silver_internet_fijo | filas=247113 | 
+2026-09-29 01:42:18 | silver_cobertura_movil | filas=26822 | 
+2026-09-29 01:42:18 | silver_men_educacion | filas=588 | 
+2026-09-29 01:42:20 | silver_saber11 | filas=295188 | 
+2026-09-29 01:42:20 | silver_poblacion | filas=4788 | 
+2026-09-29 01:42:21 | gold_dim_municipio | filas=42 | 
+2026-09-29 01:42:21 | gold_brecha_urbano_rural | filas=509 | 
+2026-09-29 01:42:21 | gold_municipio_anio | filas=252 | 
+2026-09-29 01:42:21 | gold_ranking_priorizacion | filas=42 | 
+2026-09-29 01:42:21 | pipeline | filas=0 | fin OK en 217.1 s

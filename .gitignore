@@ -1,0 +1,22 @@
+# Entorno virtual
+venv/
+.venv/
+
+# Secretos (token de Socrata)
+.env
+
+# Python / Jupyter
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Datos generados por el pipeline (se regeneran con python main.py)
+data/bronze/*.csv
+data/bronze/*.xlsx
+data/silver/*.csv
+data/gold/*.csv
+
+# Base de datos DuckDB (opcional, se regenera)
+*.duckdb
+*.duckdb.wal
