@@ -1,6 +1,6 @@
 # Brecha digital en el Valle del Cauca – Proyecto ETL (Entrega 2)
 
-Universidad Autónoma de Occidente · Curso ETL · Prof. Juan Manuel Núñez
+Universidad Autónoma de Occidente · Curso GyAD · Prof. Juan Manuel Núñez
 
 **Integrantes:** Samuel Arredondo Delgado, Cristian Andrés M. Giraldo, Luis Carlos Lozano Giraldo y Emmanuel Medina Gutiérrez.
 
