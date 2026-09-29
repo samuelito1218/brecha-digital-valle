@@ -1,0 +1,2 @@
+# Normalizar finales de línea (evita diferencias LF/CRLF entre Windows y Linux/Mac)
+* text=auto
