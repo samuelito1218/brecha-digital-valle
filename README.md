@@ -103,7 +103,7 @@ Todos los comandos se ejecutan desde la carpeta raíz del proyecto (la que conti
 **1. Crear y activar el entorno virtual**
 
 ```bash
-python -m venv venv
+python -m venv venv # De tener mas versiones de python se puede forzar el ambiente con py -3.11 -m venv venv
 venv\Scripts\activate          # Windows (en Linux/Mac: source venv/bin/activate)
 ```
 
