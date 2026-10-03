@@ -1,6 +1,6 @@
 # Versiones con las que se probó el proyecto (Python 3.14; requiere Python 3.11 o superior)
 pandas==3.0.6
-numpy==2.5.3
+numpy==2.4.6
 requests==2.34.2
 pyyaml==6.0.3
 python-dotenv==1.2.3
