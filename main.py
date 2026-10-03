@@ -1,12 +1,3 @@
-"""
-Pipeline ETL - Brecha digital en el Valle del Cauca (Entrega 2).
-
-Uso:
-    python main.py                  # extract -> clean -> gold
-    python main.py --sin-extraccion # reutiliza los archivos de data/bronze
-    python main.py --cargar-duckdb  # además carga Gold en DuckDB (opcional)
-"""
-
 import argparse
 import datetime
 import os
@@ -23,7 +14,7 @@ from src.transform.gold_data import construir_gold
 
 
 def leer_bronze(ruta: str) -> pd.DataFrame:
-    # Leer todo como texto para no perder ceros a la izquierda.
+    # leer todo como texto para no perder ceros a la izquierda.
     return pd.read_csv(ruta, dtype=str, keep_default_na=False, na_values=[""])
 
 
@@ -75,7 +66,7 @@ def main() -> None:
     parser.add_argument("--cargar-duckdb", action="store_true", help="Cargar las tablas Gold en DuckDB")
     args = parser.parse_args()
 
-    # Trabajar desde la carpeta del proyecto para que las rutas relativas del config funcionen.
+    
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     with open("config/config.yaml", "r", encoding="utf-8") as file:

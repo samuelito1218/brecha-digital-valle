@@ -19,8 +19,6 @@ api:
   reintentos: 3
 
 sources:
-  # Accesos de internet fijo por municipio, proveedor, segmento y tecnología (2017-2023).
-  # No trae población: la tasa por habitante se calcula con la población del DANE.
   internet_fijo:
     dataset_id: n48w-gutb
     filtro: "cod_departamento = '76'"
@@ -28,7 +26,6 @@ sources:
     path: data/bronze/internet_fijo_raw.csv
     silver: data/silver/internet_fijo.csv
     file_type: api
-  # Baja a centro poblado y proveedor; indicadores S/N por tecnología (2015-2023).
   cobertura_movil:
     dataset_id: 9mey-c8s8
     filtro: "cod_departamento = '76'"
@@ -50,8 +47,6 @@ sources:
     path: data/bronze/saber11_raw.csv
     silver: data/silver/saber11.csv
     file_type: api
-  # Proyecciones de población municipal por área (DANE, base Censo 2018).
-  # Se descargan dos archivos: retroproyección 2005-2017 y proyección 2018-2042.
   poblacion_dane:
     file_type: xlsx
     silver: data/silver/poblacion.csv
@@ -77,13 +72,9 @@ constant:
   date_format: "%Y-%m-%d"
   cod_departamento: "76"
   total_municipios: 42
-  # Ventana común real: internet fijo empieza en 2017 y 2022 es el último año con T4 en todas las fuentes.
   anio_inicio: 2017
   anio_fin: 2022
-  # Saber 11: punt_global solo existe desde el periodo 20142.
   periodo_minimo_saber11: 20142
-  # Índice de priorización: año del ranking y máximo % de nulos permitido por variable.
   anio_ranking: 2022
   max_pct_nulos_indice: 20
-  # Brecha por municipio: mínimo de estudiantes por zona para reportar un porcentaje.
   min_estudiantes_zona: 30

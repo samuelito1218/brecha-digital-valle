@@ -30,7 +30,7 @@ def obtener_encabezados() -> dict:
 
 
 def hacer_peticion(url: str, parametros: dict, encabezados: dict, timeout: int, reintentos: int) -> requests.Response:
-    # Reintentar la petición si falla (red o servidor), esperando 2, 4, 8... segundos.
+    # Reintentar la petición si falla (red o servidor)
     for intento in range(1, reintentos + 1):
         try:
             respuesta = requests.get(url, params=parametros, headers=encabezados, timeout=timeout)
