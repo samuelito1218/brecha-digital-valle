@@ -438,3 +438,49 @@ El detalle, con las gráficas y su interpretación, está en `notebooks/eda.ipyn
 - **P3.** En colegios rurales, el 90,6 % de los estudiantes con computador tiene internet, frente al 54,8 % de los que no tienen. El internet creció mucho, pero la tenencia de computador en lo rural se ha mantenido entre 43 % y 51 % desde 2014 (44,6 % en 2022), así que la brecha rural hoy es sobre todo de dispositivos.
 - **P4.** Los municipios con más accesos residenciales por habitante tienen mejores puntajes en Saber 11 (r = 0,57), pero la relación con la deserción es débil (r = −0,22).
 - **P5.** Los 14 municipios prioritarios en 2022 son Bolívar, El Águila, Argelia, Alcalá, La Victoria, El Cairo, El Dovio, Obando, Trujillo, Buenaventura, Riofrío, Caicedonia, Ansermanuevo y Toro.
+
+# Dashboard: Brecha Digital y Educación en el Valle del Cauca
+
+Este proyecto es un modelo analítico e interactivo desarrollado en Power BI que evalúa la brecha digital entre zonas urbanas y rurales en los 42 municipios del Valle del Cauca. El objetivo principal es cruzar datos de infraestructura tecnológica con métricas de desempeño educativo para identificar áreas de atención prioritaria.
+
+## Objetivo del Proyecto
+Proporcionar una herramienta de inteligencia de negocios (BI) que permita a tomadores de decisiones explorar el estado de la conectividad en el departamento y su impacto en la educación, apoyando la formulación de políticas públicas o estrategias de intervención.
+
+## Fuentes de Datos
+El modelo de datos consolida información histórica (2014 - 2022) proveniente de entidades oficiales:
+*   **MinTIC:** Accesos fijos a internet y operadores.
+*   **MEN (Ministerio de Educación Nacional):** Cobertura neta y deserción escolar.
+*   **ICFES:** Resultados de las pruebas Saber 11.
+*   **DANE:** Datos poblacionales y demográficos por municipio.
+
+## Vistas y Funcionalidades Principales
+
+El dashboard está compuesto por cuatro módulos principales:
+
+1. **Visión General (Brecha Digital):** 
+   * Presenta KPIs de conectividad (% Internet Rural y Urbano) y la mediana de accesos por cada 100 habitantes.
+   * Visualiza la evolución de accesos fijos a internet en el departamento desde 2017 hasta 2022.
+   * Incluye análisis poblacional mediante Treemaps y proporción de población rural por municipio.
+
+2. **Brecha Urbano vs Rural:** 
+   * Analiza la evolución de la brecha en puntos porcentuales (pp) desde 2014 hasta 2022.
+   * Segmenta el acceso a internet en los hogares según la tenencia de computador, destacando las deficiencias en las zonas rurales.
+
+3. **Conectividad y Educación:** 
+   * Contiene un gráfico de dispersión que evidencia la correlación entre los accesos fijos residenciales y el puntaje global promedio en las pruebas Saber 11.
+   * Identifica rápidamente los 10 municipios con menor conectividad fija.
+
+4. **Priorización por Municipio:** 
+   * Implementa un **índice compuesto de priorización** basado en múltiples variables (Internet fijo, operadores 4G, estudiantes con internet, puntaje Saber 11, entre otros).
+   * Identifica el municipio más prioritario (ej. Bolívar) y el mejor situado (ej. Guadalajara de Buga) según el modelo de puntuación.
+
+## Tecnologías y Herramientas
+* **Power BI:** Modelado de datos e implementación de visualizaciones interactivas.
+* **Transformación de datos:** Limpieza, normalización y cruce de bases de datos gubernamentales.
+
+## Cómo usar este dashboard
+1. Clona este repositorio: `git clone <URL_DEL_REPO>`.
+2. Abre el archivo `.pbix` utilizando **Power BI Desktop**.
+3. Navega por las diferentes pestañas y utiliza los filtros laterales para segmentar la información por **Año** (2014-2022) y **Nivel**.
+
+> **Nota:** Para el correcto funcionamiento de los mapas coropléticos de la pestaña de Conectividad, asegúrate de habilitar los objetos visuales de mapa en la configuración de seguridad de Power BI (Archivo > Opciones y configuración > Opciones > Global > Seguridad).
