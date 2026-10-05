@@ -2,7 +2,7 @@
 
 Universidad Autónoma de Occidente · Curso GyAD · Prof. Juan Manuel Núñez
 
-**Integrantes:** Samuel Arredondo Delgado, Cristian Andrés M. Giraldo, Luis Carlos Lozano Giraldo y Emmanuel Medina Gutiérrez.
+**Integrantes:** Samuel Arredondo Delgado, Cristian Andrés Mera Giraldo, Luis Carlos Lozano Giraldo y Emmanuel Medina Gutiérrez.
 
 ## 1. De qué trata el proyecto
 
@@ -27,6 +27,7 @@ Los datos que sirven para medir la brecha digital del Valle del Cauca existen, p
 - 4 tablas finales en `data/gold/`.
 - Un notebook de análisis (`notebooks/eda.ipynb`) organizado por pregunta.
 - 21 gráficas en `reports/figures/`.
+- (Opcional) Una base de datos PostgreSQL, levantada con Docker, con las 4 tablas Gold cargadas.
 
 ## 2. Datos utilizados
 
@@ -95,6 +96,7 @@ Además, los nombres oficiales de los municipios de `dim_municipio.csv` salen de
 - **Python 3.11 o superior.** Lo probamos con Python 3.14 en Windows 11.
 - **Conexión a internet:** la primera ejecución descarga unos 85 MB.
 - Unos 150 MB libres para los datos generados, sin contar el entorno virtual.
+- **(Opcional) Docker Desktop**, solo si se quiere montar el servidor PostgreSQL y cargar las tablas Gold (pasos 5 y 6 de la sección 3.2).
 
 ### 3.2 Pasos
 
@@ -142,7 +144,59 @@ Tarda entre 3 y 5 minutos (con token suele ser más rápido); la mayor parte del
 - las filas antes y después de cada unión;
 - al final, `Pipeline terminado en ... segundos`.
 
-**5. Correr las pruebas unitarias (opcional)**
+**5. (Opcional) Encender el servidor PostgreSQL con Docker**
+
+Requiere tener Docker Desktop abierto y en ejecución. Los archivos están en la carpeta `bases_de_datos/`:
+
+```bash
+cd bases_de_datos
+docker compose up -d
+```
+
+La primera vez descarga la imagen `postgres:16`. Luego crea el contenedor `servidor_postgres` con la base de datos `brecha_digital` y ejecuta `init.sql`, que crea las tablas. Para comprobar que quedó encendido:
+
+```bash
+docker ps
+```
+
+Debe aparecer `servidor_postgres` con estado `Up`. Espere unos segundos antes del siguiente paso para que el servidor termine de arrancar. Los datos de conexión (definidos en `docker-compose.yml`) son:
+
+| Parámetro | Valor |
+|---|---|
+| Host | `localhost` |
+| Puerto | `5432` |
+| Base de datos | `brecha_digital` |
+| Usuario / contraseña | `postgres` / `postgres` |
+
+Son credenciales de desarrollo local; no use estas en un servidor expuesto a internet.
+
+**6. (Opcional) Cargar las tablas Gold en PostgreSQL**
+
+Requiere haber ejecutado el paso 4 (para que existan los CSV de `data/gold/`) y el paso 5 (para que el servidor esté encendido). Vuelva a la carpeta raíz del proyecto y ejecute:
+
+```bash
+cd ..
+python bases_de_datos/cargar_csv.py
+```
+
+Hay que ejecutarlo desde la raíz porque el script lee las rutas de los CSV desde `config/config.yaml` (sección `gold`). Usa `sqlalchemy` y `psycopg2` para conectarse al servidor. Por cada archivo imprime la ruta, la tabla de destino y el número de registros encontrados, y al final muestra `✓ CARGA COMPLETADA CORRECTAMENTE`. El script:
+
+- Lee cada CSV y limpia los nombres de columnas (sin espacios y en minúscula).
+- Convierte `muestra_suficiente` y `prioritario` a booleanos y los valores vacíos (`NA`, `N/A`, `NULL`) a nulos.
+- Inserta en este orden, que respeta las llaves foráneas: `dim_municipio` → `brecha_urbano_rural` → `municipio_anio` → `ranking_priorizacion`.
+- Si PostgreSQL rechaza una tabla, imprime solo el mensaje del error y se detiene.
+
+Para verificar la carga puede consultar el número de filas de una tabla (deben ser 42 en `dim_municipio`, 509 en `brecha_urbano_rural`, 252 en `municipio_anio` y 42 en `ranking_priorizacion`):
+
+```bash
+docker exec -it servidor_postgres psql -U postgres -d brecha_digital -c "SELECT COUNT(*) FROM municipio_anio;"
+```
+
+También se puede conectar con cualquier cliente SQL (DBeaver, pgAdmin, DataGrip) usando los datos de conexión del paso 5.
+
+El script inserta con `append`, así que **no debe ejecutarse dos veces seguidas** sobre las mismas tablas: duplicaría registros o fallaría por llaves repetidas. Para recargar desde cero, apague y borre el contenedor con sus datos (`docker compose down -v`, desde `bases_de_datos/`) y repita los pasos 5 y 6. Para apagar el servidor conservando los datos, use `docker compose stop`.
+
+**7. Correr las pruebas unitarias (opcional)**
 
 ```bash
 pytest
@@ -150,9 +204,9 @@ pytest
 
 Deben pasar las 5 pruebas. No descargan nada: usan datos de ejemplo.
 
-**6. Abrir el notebook de análisis**
+**8. Abrir el notebook de análisis**
 
-Requiere haber ejecutado antes el paso 4, porque lee los archivos de `data/silver/` y `data/gold/`.
+Requiere haber ejecutado antes el paso 4 (no depende de PostgreSQL), porque lee los archivos de `data/silver/` y `data/gold/`.
 
 ```bash
 jupyter notebook notebooks/eda.ipynb
@@ -174,6 +228,12 @@ En el menú, elija *Kernel → Restart & Run All*. Además de mostrar las gráfi
 | Error `500`, `503` o `Read timed out` durante la extracción | datos.gov.co a veces responde con errores intermitentes | El código ya reintenta cada petición 3 veces. Si aun así falla, espere unos minutos y vuelva a ejecutar, o suba `reintentos` en `config/config.yaml`. |
 | Error `403 Invalid app_token specified` | El valor de `.env` no es un App Token válido | Revise que sea el *App Token* y no el *Secret Token*, o deje la línea vacía (`SOCRATA_APP_TOKEN=`). |
 | `FileNotFoundError` al usar `--sin-extraccion` o al abrir el notebook | Todavía no existen los datos | Ejecute primero `python main.py`. |
+| `FileNotFoundError: ./config/config.yaml` o `No se encontró el archivo: data/gold/...` al cargar a PostgreSQL | Se ejecutó `cargar_csv.py` desde otra carpeta, o aún no se corrió el pipeline | Ejecútelo desde la raíz del proyecto (`python bases_de_datos/cargar_csv.py`) y confirme que `data/gold/` tiene los 4 CSV. |
+| `docker compose` dice que no puede conectarse al daemon de Docker | Docker Desktop no está abierto | Abra Docker Desktop, espere a que arranque y repita el paso 5. |
+| `port is already allocated` al levantar el contenedor | Otro PostgreSQL ya usa el puerto 5432 | Apague ese servicio, o cambie en `docker-compose.yml` el puerto a `"5433:5432"` y ponga `DB_PORT = "5433"` en `cargar_csv.py`. |
+| `connection refused` o `could not connect to server` al cargar | El contenedor no está encendido o aún está arrancando | Revise con `docker ps`, espere unos segundos y repita el paso 6. |
+| `relation "..." does not exist` al cargar | `init.sql` no se ejecutó; solo corre cuando la base se crea por primera vez | Ejecute `docker compose down -v` y luego `docker compose up -d` desde `bases_de_datos/`. |
+| `duplicate key value violates unique constraint` al cargar | Las tablas ya tenían datos de una carga anterior | Recargue desde cero con `docker compose down -v` y `docker compose up -d`. |
 
 ## 4. Estructura del proyecto
 
@@ -185,6 +245,10 @@ Proyecto_ETL/
 │   ├── silver/                     ← un CSV limpio por fuente
 │   └── gold/                       ← tablas finales para el análisis
 ├── logs/                           ← un archivo etl_AAAA-MM-DD.log por día de ejecución
+├── bases_de_datos/
+│   ├── docker-compose.yml          ← levanta el servidor PostgreSQL 16 (contenedor `servidor_postgres`)
+│   ├── init.sql                    ← crea las tablas al iniciar el contenedor por primera vez
+│   └── cargar_csv.py               ← carga los CSV de data/gold/ en las tablas de PostgreSQL
 ├── notebooks/eda.ipynb             ← análisis exploratorio y gráficas, organizado por P1–P5
 ├── reports/figures/                ← gráficas del notebook en PNG
 ├── src/
@@ -212,6 +276,7 @@ Ningún archivo de código tiene rutas absolutas: todas las rutas salen de `conf
 | Bronze | API de datos.gov.co y archivos del DANE | Descarga sin modificar valores | 4 CSV + 2 XLSX en `data/bronze/` | `src/extract/extract_api.py` |
 | Silver | Archivos de Bronze | Limpieza, conversión de tipos y de duplicación; una función por fuente | 5 CSV en `data/silver/` | `src/transform/clean_*.py` |
 | Gold | Archivos de Silver | Agregación a municipio-año, unión de fuentes, cálculo de indicadores e índice | 4 CSV en `data/gold/` | `src/transform/gold_data.py` |
+| Carga (opcional) | Archivos de Gold | Inserción de las 4 tablas en un servidor PostgreSQL con Docker | 4 tablas en la base `brecha_digital` | `bases_de_datos/cargar_csv.py` |
 | Análisis | Archivos de Silver y Gold | Exploración de datos y gráficas por pregunta | Notebook y 21 PNG en `reports/figures/` | `notebooks/eda.ipynb` |
 
 ### 5.1 Bronze: extracción
@@ -338,6 +403,7 @@ El índice resume en un solo número qué tan buena es la situación de cada mun
 | `data/silver/` | `internet_fijo.csv`, `cobertura_movil.csv`, `men_educacion.csv`, `saber11.csv`, `poblacion.csv` | `python main.py` |
 | `data/gold/` | `dim_municipio.csv`, `brecha_urbano_rural.csv`, `municipio_anio.csv`, `ranking_priorizacion.csv` | `python main.py` |
 | `data/gold/` | `brecha_digital.duckdb` | `python main.py --cargar-duckdb` (opcional) |
+| PostgreSQL (contenedor `servidor_postgres`) | Tablas `dim_municipio`, `brecha_urbano_rural`, `municipio_anio`, `ranking_priorizacion` en la base `brecha_digital` | `docker compose up -d` y `python bases_de_datos/cargar_csv.py` (opcional) |
 | `logs/` | `etl_AAAA-MM-DD.log` | `python main.py` |
 | `reports/figures/` | 21 gráficas PNG numeradas por sección (por ejemplo, `08_p1_evolucion_urbano_rural.png`, `18_p5_ranking_indice.png`) | ejecutar el notebook completo |
 
