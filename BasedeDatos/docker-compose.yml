@@ -9,11 +9,14 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
 
+    # Puerto del computador: 5432 por defecto. Si ya hay otro PostgreSQL
+    # usando el 5432, se puede levantar con DB_PORT=5433.
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
 
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
 
 volumes:
   postgres_data:

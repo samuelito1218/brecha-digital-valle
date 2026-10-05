@@ -1,42 +1,15 @@
 -- ============================================================
 -- DIMENSIÓN MUNICIPIO
 -- ============================================================
+-- cod_mpio es el código DIVIPOLA del DANE: se guarda como texto de 5 dígitos
+-- (igual que en todo el proyecto) para no perder ceros a la izquierda.
 
 CREATE TABLE IF NOT EXISTS dim_municipio (
-    cod_mpio INTEGER PRIMARY KEY,
+    cod_mpio VARCHAR(5) PRIMARY KEY CHECK (cod_mpio ~ '^[0-9]{5}$'),
     municipio VARCHAR(150) NOT NULL
 );
 
 
--- ============================================================
--- BRECHA URBANO-RURAL
--- ============================================================
-
-CREATE TABLE IF NOT EXISTS brecha_urbano_rural (
-    id BIGSERIAL PRIMARY KEY,
-
-    nivel VARCHAR(50),
-    cod_mpio INTEGER,
-    anio INTEGER,
-    zona VARCHAR(50),
-
-    n_estudiantes INTEGER,
-    muestra_suficiente BOOLEAN,
-
-    pct_con_internet NUMERIC(10,4),
-    pct_con_computador NUMERIC(10,4),
-    pct_internet_si_tiene_pc NUMERIC(10,4),
-    pct_internet_si_no_tiene_pc NUMERIC(10,4),
-
-    punt_global_prom NUMERIC(10,4),
-
-    CONSTRAINT fk_brecha_municipio
-        FOREIGN KEY (cod_mpio)
-        REFERENCES dim_municipio(cod_mpio),
-
-    CONSTRAINT uq_brecha_municipio_anio_zona
-        UNIQUE (cod_mpio, anio, zona)
-);
 -- ============================================================
 -- MUNICIPIO - AÑO
 -- ============================================================
@@ -44,14 +17,14 @@ CREATE TABLE IF NOT EXISTS brecha_urbano_rural (
 CREATE TABLE IF NOT EXISTS municipio_anio (
     id BIGSERIAL PRIMARY KEY,
 
-    cod_mpio INTEGER NOT NULL,
+    cod_mpio VARCHAR(5) NOT NULL,
     municipio VARCHAR(150),
-    anio INTEGER,
+    anio INTEGER NOT NULL,
 
     poblacion_total BIGINT,
     pct_poblacion_rural NUMERIC(10,4),
 
-    trimestre_fijo VARCHAR(50),
+    trimestre_fijo INTEGER,
 
     accesos_fijos_total BIGINT,
     accesos_fijos_residenciales BIGINT,
@@ -69,7 +42,8 @@ CREATE TABLE IF NOT EXISTS municipio_anio (
 
     desercion NUMERIC(10,4),
 
-    sedes_conectadas_a_internet INTEGER,
+    -- Es un porcentaje con decimales (por ejemplo 38,1), no un conteo.
+    sedes_conectadas_a_internet NUMERIC(10,4),
 
     saber11_anio_completo INTEGER,
     n_estudiantes_saber11 INTEGER,
@@ -86,6 +60,8 @@ CREATE TABLE IF NOT EXISTS municipio_anio (
     CONSTRAINT uq_municipio_anio
         UNIQUE (cod_mpio, anio)
 );
+
+
 -- ============================================================
 -- RANKING DE PRIORIZACIÓN
 -- ============================================================
@@ -93,9 +69,9 @@ CREATE TABLE IF NOT EXISTS municipio_anio (
 CREATE TABLE IF NOT EXISTS ranking_priorizacion (
     id BIGSERIAL PRIMARY KEY,
 
-    cod_mpio INTEGER NOT NULL,
+    cod_mpio VARCHAR(5) NOT NULL,
     municipio VARCHAR(150),
-    anio INTEGER,
+    anio INTEGER NOT NULL,
 
     accesos_residenciales_por_100_hab NUMERIC(10,4),
     operadores_4g INTEGER,
@@ -125,9 +101,74 @@ CREATE TABLE IF NOT EXISTS ranking_priorizacion (
         FOREIGN KEY (cod_mpio)
         REFERENCES dim_municipio(cod_mpio),
 
+    -- El ranking se calcula a partir de municipio_anio (mismo municipio y año).
+    CONSTRAINT fk_ranking_municipio_anio
+        FOREIGN KEY (cod_mpio, anio)
+        REFERENCES municipio_anio(cod_mpio, anio),
+
     CONSTRAINT uq_ranking_municipio_anio
         UNIQUE (cod_mpio, anio)
 );
+
+
+-- ============================================================
+-- BRECHA URBANO-RURAL POR MUNICIPIO
+-- ============================================================
+-- Solo filas de municipios (nivel = 'municipio'). El total del Valle
+-- va en la tabla brecha_valle, porque su código 76000 no es un municipio.
+
+CREATE TABLE IF NOT EXISTS brecha_urbano_rural (
+    id BIGSERIAL PRIMARY KEY,
+
+    nivel VARCHAR(50),
+    cod_mpio VARCHAR(5) NOT NULL,
+    anio INTEGER NOT NULL,
+    zona VARCHAR(50) NOT NULL,
+
+    n_estudiantes INTEGER,
+    muestra_suficiente BOOLEAN,
+
+    pct_con_internet NUMERIC(10,4),
+    pct_con_computador NUMERIC(10,4),
+    pct_internet_si_tiene_pc NUMERIC(10,4),
+    pct_internet_si_no_tiene_pc NUMERIC(10,4),
+
+    punt_global_prom NUMERIC(10,4),
+
+    CONSTRAINT fk_brecha_municipio
+        FOREIGN KEY (cod_mpio)
+        REFERENCES dim_municipio(cod_mpio),
+
+    CONSTRAINT uq_brecha_municipio_anio_zona
+        UNIQUE (cod_mpio, anio, zona)
+);
+
+
+-- ============================================================
+-- BRECHA URBANO-RURAL: TOTAL DEL VALLE
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS brecha_valle (
+    id BIGSERIAL PRIMARY KEY,
+
+    anio INTEGER NOT NULL,
+    zona VARCHAR(50) NOT NULL,
+
+    n_estudiantes INTEGER,
+    muestra_suficiente BOOLEAN,
+
+    pct_con_internet NUMERIC(10,4),
+    pct_con_computador NUMERIC(10,4),
+    pct_internet_si_tiene_pc NUMERIC(10,4),
+    pct_internet_si_no_tiene_pc NUMERIC(10,4),
+
+    punt_global_prom NUMERIC(10,4),
+
+    CONSTRAINT uq_brecha_valle_anio_zona
+        UNIQUE (anio, zona)
+);
+
+
 -- ============================================================
 -- ÍNDICES
 -- ============================================================
